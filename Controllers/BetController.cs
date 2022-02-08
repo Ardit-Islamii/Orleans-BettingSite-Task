@@ -21,11 +21,21 @@ namespace Orleans_BettingSite_Task.Controllers
 
 
         [HttpPost]
-        public Task<ActionResult<BetCreateResponse>> CreateBet([FromBody] BetCreateRequest betRequest)
+        public async Task<ActionResult<BetCreateResponse>> CreateBet([FromBody] BetCreateRequest betRequest)
         {
-            var intermediateGrain = _factory.GetGrain<IIntermediateGrain>(Guid.NewGuid());
+            var storedGuid = Guid.NewGuid();
+            var intermediateGrain = _factory.GetGrain<IIntermediateGrain>(storedGuid);
+            var betGrain = _factory.GetGrain<IBetGrain>(storedGuid);
+            await betGrain.BecomeConsumer(storedGuid);
+            var test = await intermediateGrain.GetBet();
+            var testObj = new BetCreateResponse()
+            {
+                Id = Guid.NewGuid(),
+                Amount = 10,
+                LastUpdated = DateTime.UtcNow
+            };
             
-            return Ok();
+            return Ok(testObj);
         }
     }
 }

@@ -6,6 +6,6 @@ namespace Orleans_BettingSite_Task.Interfaces
     {
         Task<decimal> GetBetAmount();
         Task<bool> SetBetAmount(decimal amount);
-
+        Task BecomeConsumer(Guid streamId);
     }
 }

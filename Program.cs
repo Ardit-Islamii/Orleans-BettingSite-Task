@@ -1,5 +1,7 @@
 using Orleans.Configuration;
 using Orleans.Hosting;
+using Orleans_BettingSite_Task.Grains;
+using Orleans;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -12,7 +14,6 @@ builder.Host.UseOrleans(siloBuilder =>
     }));
     siloBuilder.UseAdoNetClustering(options =>
     {
-        //Qekjo merrret esht string statik n'dbconfig tAdoNet
         options.Invariant = "Npgsql";
         options.ConnectionString = builder.Configuration.GetConnectionString("DatabaseConnectionString");
     });
@@ -22,9 +23,19 @@ builder.Host.UseOrleans(siloBuilder =>
         options.ConnectionString = builder.Configuration.GetConnectionString("DatabaseConnectionString");
         options.UseJsonFormat = true;
     });
+    siloBuilder.AddSimpleMessageStreamProvider("bet", options =>
+    {
+        options.FireAndForgetDelivery = true;
+    }).AddMemoryGrainStorage("PubSubStore"); ;
     siloBuilder.ConfigureApplicationParts
     (
         parts => parts.AddApplicationPart(typeof(BetGrain).Assembly).WithReferences()
+    );
+    siloBuilder.ConfigureEndpoints
+    (
+        siloPort: 11111,
+        gatewayPort: 30000,
+        listenOnAnyHostAddress: true
     );
 });
 

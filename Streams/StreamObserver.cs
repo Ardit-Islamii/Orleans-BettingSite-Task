@@ -2,20 +2,21 @@
 
 namespace Orleans_BettingSite_Task.Streams
 {
-    public class StreamObserver : IAsyncStream<T>
+    public class StreamObserver : IAsyncObserver<BetMessage>
     {
         public StreamObserver()
         {
             
         }
         public Task OnCompletedAsync() => Task.CompletedTask;
-
+         
         public Task OnErrorAsync(Exception ex)
-            
+        {
             return Task.CompletedTask;
         }
-        public Task OnNextAsync(T item, StreamSequenceToken token = null)
+        public Task OnNextAsync(BetMessage message, StreamSequenceToken token = null)
         {
+            Console.WriteLine($"Getting bet with amount: {message.Amount}, last updated at {message.Created}");
             return Task.CompletedTask;
         }
     }
