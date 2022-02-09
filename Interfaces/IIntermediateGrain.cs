@@ -5,8 +5,7 @@ namespace Orleans_BettingSite_Task.Interfaces
 {
     public interface IIntermediateGrain : IGrainWithGuidKey
     {
-        Task<BetReadResponse> GetBet();
-        Task<BetCreateResponse> SetBetAmount();
-
+        Task<BetReadResponse> GetBetAsync(Guid betId);
+        Task<BetCreateResponse> SetBetAmountAsync(decimal amount);
     }
 }

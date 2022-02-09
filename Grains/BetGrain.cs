@@ -1,38 +1,46 @@
 ﻿using Orleans;
+using Orleans.Providers;
 using Orleans.Runtime;
 using Orleans.Streams;
 using Orleans_BettingSite_Task.Interfaces;
+using Orleans_BettingSite_Task.States;
 using Orleans_BettingSite_Task.Streams;
 
 namespace Orleans_BettingSite_Task.Grains
 {
-    public class BetGrain : Grain, IBetGrain // Qekjo the receiver se ban subscribe -> consumer.SubscribeAsync
+    [StorageProvider(ProviderName = "amountStore")]
+    public class BetGrain : Grain, IBetGrain
     {
         private IAsyncObservable<BetMessage> consumer;
         internal int numConsumedItems;
         internal ILogger logger;
         private StreamSubscriptionHandle<BetMessage> consumerHandle;
 
-        public override Task OnActivateAsync()
+        private readonly IPersistentState<AmountState> _amount;
+
+        public BetGrain([PersistentState("amount", "amountStore")] IPersistentState<AmountState> amount)
         {
-            return base.OnActivateAsync();
+            _amount = amount;
         }
 
-        public async Task BecomeConsumer(Guid streamId)
+        public override async Task OnActivateAsync()
         {
             IStreamProvider streamProvider = this.GetStreamProvider("bet");
-            consumer = streamProvider.GetStream<BetMessage>(streamId, "default");
+            consumer = streamProvider.GetStream<BetMessage>(this.GetPrimaryKey(), "default");
             consumerHandle = await consumer.SubscribeAsync(new StreamObserver());
+            await base.OnActivateAsync();
         }
 
-        public Task<decimal> GetBetAmount()
+        public async Task<decimal> GetBetAmountAsync()
         {
-            throw new NotImplementedException();
+            return _amount.State.Amount;
         }
 
-        public Task<bool> SetBetAmount(decimal amount)
+        public async Task<decimal> SetBetAmountAsync(decimal amount)
         {
-            throw new NotImplementedException();
+            _amount.State.Amount = amount;
+            await _amount.WriteStateAsync();
+            return await Task.FromResult(_amount.State.Amount);
         }
     }
 }

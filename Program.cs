@@ -17,16 +17,21 @@ builder.Host.UseOrleans(siloBuilder =>
         options.Invariant = "Npgsql";
         options.ConnectionString = builder.Configuration.GetConnectionString("DatabaseConnectionString");
     });
-    siloBuilder.AddAdoNetGrainStorage("betStorage", options =>
+    siloBuilder.AddSimpleMessageStreamProvider("bet", options =>
+    {
+        options.FireAndForgetDelivery = true;
+    }).AddAdoNetGrainStorage("PubSubStore", options =>
     {
         options.Invariant = "Npgsql";
         options.ConnectionString = builder.Configuration.GetConnectionString("DatabaseConnectionString");
         options.UseJsonFormat = true;
     });
-    siloBuilder.AddSimpleMessageStreamProvider("bet", options =>
+    siloBuilder.AddAdoNetGrainStorage("amountStore", options =>
     {
-        options.FireAndForgetDelivery = true;
-    }).AddMemoryGrainStorage("PubSubStore"); ;
+        options.Invariant = "Npgsql";
+        options.ConnectionString = builder.Configuration.GetConnectionString("DatabaseConnectionString");
+        options.UseJsonFormat = true;
+    });
     siloBuilder.ConfigureApplicationParts
     (
         parts => parts.AddApplicationPart(typeof(BetGrain).Assembly).WithReferences()

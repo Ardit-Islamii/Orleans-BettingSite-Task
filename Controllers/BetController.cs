@@ -19,23 +19,20 @@ namespace Orleans_BettingSite_Task.Controllers
             _factory = factory;
         }
 
-
-        [HttpPost]
-        public async Task<ActionResult<BetCreateResponse>> CreateBet([FromBody] BetCreateRequest betRequest)
+        [HttpGet("{id}")]
+        public async Task<ActionResult<BetReadResponse>> GetBet(Guid id)
         {
-            var storedGuid = Guid.NewGuid();
-            var intermediateGrain = _factory.GetGrain<IIntermediateGrain>(storedGuid);
-            var betGrain = _factory.GetGrain<IBetGrain>(storedGuid);
-            await betGrain.BecomeConsumer(storedGuid);
-            var test = await intermediateGrain.GetBet();
-            var testObj = new BetCreateResponse()
-            {
-                Id = Guid.NewGuid(),
-                Amount = 10,
-                LastUpdated = DateTime.UtcNow
-            };
-            
-            return Ok(testObj);
+            var intermediateGrain = _factory.GetGrain<IIntermediateGrain>(id);
+            var result = await intermediateGrain.GetBetAsync(id);
+            return Ok(result);
+        }
+
+        [HttpPost("{id}")]
+        public async Task<ActionResult<BetCreateResponse>> CreateBet(Guid id,[FromBody] BetCreateRequest betRequest)
+        {
+            var intermediateGrain = _factory.GetGrain<IIntermediateGrain>(id);
+            var result = await intermediateGrain.SetBetAmountAsync(betRequest.Amount);
+            return Ok(result);
         }
     }
 }

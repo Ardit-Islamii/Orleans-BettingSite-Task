@@ -4,8 +4,7 @@ namespace Orleans_BettingSite_Task.Interfaces
 {
     public interface IBetGrain : IGrainWithGuidKey
     {
-        Task<decimal> GetBetAmount();
-        Task<bool> SetBetAmount(decimal amount);
-        Task BecomeConsumer(Guid streamId);
+        Task<decimal> GetBetAmountAsync();
+        Task<decimal> SetBetAmountAsync(decimal amount);
     }
 }
