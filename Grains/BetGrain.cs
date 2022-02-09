@@ -1,16 +1,19 @@
 ﻿using Orleans;
+using Orleans.EventSourcing;
 using Orleans.Providers;
 using Orleans.Runtime;
 using Orleans.Streams;
+using Orleans_BettingSite_Task.Events;
 using Orleans_BettingSite_Task.Interfaces;
 using Orleans_BettingSite_Task.States;
 using Orleans_BettingSite_Task.Streams;
 
 namespace Orleans_BettingSite_Task.Grains
 {
+    [LogConsistencyProvider(ProviderName = "testLogStorage")]
     [StorageProvider(ProviderName = "amountStore")]
     [ImplicitStreamSubscription("default")]
-    public class BetGrain : Grain, IBetGrain
+    public class BetGrain : JournaledGrain<AmountState, BetEvent>, IBetGrain
     {
         private IAsyncObservable<BetMessage> consumer;
         internal ILogger logger;
@@ -45,14 +48,16 @@ namespace Orleans_BettingSite_Task.Grains
             logger.Info("OnErrorAsync({0})", ex);
             return Task.CompletedTask;
         }
-        public async Task<decimal> GetBetAmountAsync()
+        public Task<decimal> GetBetAmount()
         {
             var amount = _amount.State.Amount;
-            return amount;
+            return Task.FromResult(amount);
         }
         public async Task<decimal> SetBetAmountAsync(decimal amount)
         {
             _amount.State.Amount = amount;
+            RaiseEvent(new BetEvent(amount, "Bet amount set"));
+            await ConfirmEvents();
             await _amount.WriteStateAsync();
             return await Task.FromResult(_amount.State.Amount);
         }

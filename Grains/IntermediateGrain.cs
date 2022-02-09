@@ -20,7 +20,7 @@ namespace Orleans_BettingSite_Task.Grains
 
         public async Task<BetReadResponse> GetBetAsync(Guid betId)
         {
-            var result = await currentBet.GetBetAmountAsync();
+            var result = await currentBet.GetBetAmount();
             var betReadResponse = new BetReadResponse()
             {
                 Amount = result,
