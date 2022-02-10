@@ -50,15 +50,17 @@ namespace Orleans_BettingSite_Task.Grains
         }
         public Task<decimal> GetBetAmount()
         {
-            var amount = _amount.State.Amount;
-            return Task.FromResult(amount);
+            return Task.FromResult(_amount.State.Amount);
         }
         public async Task<decimal> SetBetAmountAsync(decimal amount)
         {
             _amount.State.Amount = amount;
+
             RaiseEvent(new BetEvent(amount, "Bet amount set"));
             await ConfirmEvents();
             await _amount.WriteStateAsync();
+            
+            logger.LogInformation("Changed the bet amount of bet with id:{1} to {2}", this.GetPrimaryKey(), amount);
             return await Task.FromResult(_amount.State.Amount);
         }
     }
