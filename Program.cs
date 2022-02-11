@@ -32,6 +32,7 @@ builder.Host.UseOrleans(siloBuilder =>
         options.ConnectionString = builder.Configuration.GetConnectionString("DatabaseConnectionString");
         options.UseJsonFormat = true;
     });
+    siloBuilder.AddLogStorageBasedLogConsistencyProvider("testLogStorage");
     siloBuilder.ConfigureApplicationParts
     (
         parts => parts.AddApplicationPart(typeof(BetGrain).Assembly).WithReferences()

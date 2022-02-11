@@ -9,12 +9,7 @@ namespace Orleans_BettingSite_Task.Grains
     {
         private IBetGrain currentBet;
         private IAsyncStream<BetMessage> stream;
-
-        public IntermediateGrain()
-        {
-            
-        }
-
+    
         public override Task OnActivateAsync()
         {
             var streamProvider = GetStreamProvider("bet");
@@ -25,7 +20,7 @@ namespace Orleans_BettingSite_Task.Grains
 
         public async Task<BetReadResponse> GetBetAsync(Guid betId)
         {
-            var result = await currentBet.GetBetAmountAsync();
+            var result = await currentBet.GetBetAmount();
             var betReadResponse = new BetReadResponse()
             {
                 Amount = result,
@@ -37,10 +32,10 @@ namespace Orleans_BettingSite_Task.Grains
 
         public async Task<BetCreateResponse> SetBetAmountAsync(decimal amount)
         {
-            var result = await currentBet.SetBetAmountAsync(amount);
+            await stream.OnNextAsync(new BetMessage(amount, "setBetAmountAsync"));
             var returnedResult = new BetCreateResponse()
             {
-                Amount = result,
+                Amount = amount,
                 Id = this.GetPrimaryKey(),
                 LastUpdated = DateTime.Now
             };
