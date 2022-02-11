@@ -21,7 +21,7 @@ namespace Orleans_BettingSite_Task.Controllers
         }
 
         [HttpGet("{id}")]
-        public async Task<ActionResult<BetReadResponse>> GetBet(Guid id)
+        public async Task<ActionResult<BetReadResponse>> GetBetAsync(Guid id)
         {
             var intermediateGrain = _factory.GetGrain<IIntermediateGrain>(id);
             var result = await intermediateGrain.GetBetAsync(id);
@@ -29,22 +29,38 @@ namespace Orleans_BettingSite_Task.Controllers
         }
 
         [HttpPost("{id}")]
-        public async Task<ActionResult<BetCreateResponse>> CreateBet(Guid id,[FromBody] BetCreateRequest betRequest)
+        public async Task<ActionResult<BetCreateResponse>> CreateBetAsync(Guid id,[FromBody] BetCreateRequest betRequest)
         {
             var intermediateGrain = _factory.GetGrain<IIntermediateGrain>(id);
             var result = await intermediateGrain.SetBetAmountAsync(betRequest.Amount);
             return Ok(result);
         }
 
-
-        [HttpPost("{id}")]
-        public async Task SubscribeToTestGrain(Guid id)
+        [HttpPost("subscribe/{id}")]
+        public async Task SubscribeToTestObserverAsync(Guid id)
         {
             var testGrain = _factory.GetGrain<ITestGrain>(id);
             Test test = new Test();
             var obj = await _factory.CreateObjectReference<ITest>(test);
 
             await testGrain.Subscribe(obj);
+        }
+
+        [HttpPost("unsubscribe/{id}")]
+        public async Task UnsubscribeToTestObserverAsync(Guid id)
+        {
+            var testGrain = _factory.GetGrain<ITestGrain>(id);
+            Test test = new Test();
+            var obj = await _factory.CreateObjectReference<ITest>(test);
+
+            await testGrain.UnSubscribe(obj);
+        }
+
+        [HttpPost("sendmessage/{id}")]
+        public async Task SendMessageAsync(Guid id, [FromBody] string message)
+        {
+            var testGrain = _factory.GetGrain<ITestGrain>(id);
+            await testGrain.SendMessage(message);
         }
     }
 }
