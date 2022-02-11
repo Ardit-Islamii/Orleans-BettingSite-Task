@@ -12,8 +12,9 @@ namespace Orleans_BettingSite_Task.Controllers
     [Route("api/[controller]")]
     [ApiController]
     public class BetController : ControllerBase
-    {
+    { 
         private readonly IGrainFactory _factory;
+        Test test = new();
 
         public BetController(IGrainFactory factory)
         {
@@ -50,7 +51,6 @@ namespace Orleans_BettingSite_Task.Controllers
         public async Task UnsubscribeToTestObserverAsync(Guid id)
         {
             var testGrain = _factory.GetGrain<ITestGrain>(id);
-            Test test = new Test();
             var obj = await _factory.CreateObjectReference<ITest>(test);
 
             await testGrain.UnSubscribe(obj);
